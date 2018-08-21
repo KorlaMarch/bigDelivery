@@ -622,6 +622,7 @@ void bigDeliveryFrame::Onplot3DMouseClick(wxMouseEvent& event)
 
 void bigDeliveryFrame::OnQuit(wxCommandEvent& event)
 {
+	botData->allThreadsMustExit = true;
     Close();
 }
 

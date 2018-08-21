@@ -389,7 +389,7 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 		sleeptime = botData->cfgFile->read_int("GLOBAL", "sleeptime_ASF", 30, true);
 		WheelDistance = botData->robotData.wheelDistance;
 
-		// parameter for the odometry (from encoder)
+		// parameter for the odometry
 		CActionRobotMovement2D::TMotionModelOptions odom_params;
 		odom_params.modelSelection = CActionRobotMovement2D::mmGaussian;
 		odom_params.gaussianModel.minStdXY = botData->cfgFile->read_double("ODOMETRY_PARAMS", "minStdXY", 0.04);
@@ -398,9 +398,11 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 		// previous encoder (used to compute absolute value)
 		int pre_encoder_left = botData->encoder_left;
 		int pre_encoder_right = botData->encoder_right;
+		int pre_encoder_pivot = botData->robotData.encoderPivot;
 
 		while (!botData->allThreadsMustExit)
 		{
+			// Get a laser scan
 			CObservation2DRangeScanPtr observation;
 			{
 				mrpt::synch::CCriticalSectionLocker obsLock(&botData->cs_global_list_obs);
@@ -432,23 +434,34 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 				timeout_read_scans.Tic(); // Reset timeout
 			}
 
-			// Compute action from the encoder value
+			// Compute action from the encoder value (lower base)
 			CActionRobotMovement2DPtr act = CActionRobotMovement2D::Create();
 			act->timestamp = mrpt::system::now();
 			act->hasEncodersInfo = true;
 			act->encoderLeftTicks = botData->encoder_left - pre_encoder_left;
 			act->encoderRightTicks = botData->encoder_right - pre_encoder_right;
-
+			
 			act->motionModelConfiguration = odom_params;
 
 			act->computeFromEncoders(0.001, 0.001, WheelDistance);
 
+			// Compute action for upper base
+			CActionRobotMovement2DPtr actUp = act;
+			int encoderPivotTicks = botData->robotData.encoderPivot - pre_encoder_pivot;
+			actUp.make_unique();
+
+			poses::CPosePDFGaussian		*aux;
+			aux = static_cast<poses::CPosePDFGaussian*>(actUp->poseChange.pointer());
+			aux->mean.AddComponents( poses::CPose2D(0, 0, - encoderPivotTicks / botData->robotData.encoderStepPreRad) );
+
+			// Save the current encoder for next round
 			pre_encoder_left = botData->encoder_left;
 			pre_encoder_right = botData->encoder_right;
-			
-			// calculate new velocity
-			int dt = (act->timestamp - botData->ASFTime) / 10000.0;
-			poses::CPose2D actpos = act->poseChange->getMeanVal();
+			pre_encoder_pivot = botData->robotData.encoderPivot;
+			 
+			// Calculate new velocity
+			int dt = (actUp->timestamp - botData->ASFTime) / 10000000.0;
+			poses::CPose2D actpos = actUp->poseChange->getMeanVal();
 			TTwist2D newVelocity(actpos.m_coords[0]/dt, actpos.m_coords[1]/dt, actpos.phi()/dt);
 			newVelocity.rotate(botData->odometry.phi());
 
@@ -456,17 +469,17 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 				synch::CCriticalSectionLocker	lock(&botData->cs_ASF);
 
 				// Insert observation and action into Action/SF
-				botData->ASFTime = act->timestamp;
+				botData->ASFTime = actUp->timestamp;
 				botData->sf.clear();
 				botData->sf.insert(observation);
 
 
 				botData->actions.clear();
-				botData->actions.insert(*act);
+				botData->actions.insert(*actUp);
 				botData->odometry += actpos;
 				botData->estVelocity = newVelocity;
 
-				act.clear_unique();
+				actUp.clear_unique();
 			}
 
 			// Build the obstacles points map for navigation:

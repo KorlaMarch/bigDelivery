@@ -49,3 +49,5 @@ CMakeCache.txt
 # Robot Logs
 *.reactivenavlog
 ReacNavGrid*
+err.txt
+log.txt
