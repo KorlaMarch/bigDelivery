@@ -174,8 +174,7 @@ bool RobotConnector::Update()
 		lastE = angular_error;
 		lastUpdate.Tic();
 
-		//return ganglia.setAllVelocity({ vel_left , vel_right });
-		return true;
+		return ganglia.setAllVelocity({ vel_left , vel_right });
 	}
 
 	return true;
@@ -197,18 +196,30 @@ bool RobotConnector::RequestData()
 	}
 	//cout << "buffer size " << length << endl;
 	
-	// convert string in buffer to an integer
-	int lastDecoded = 0;
+	int i;
 	bool isErr = false;
-	for (int i = 0; i < length; i++)
+
+	// find the first newline (\n)
+	for (i = 0; i < length && _buff[i] != '\n'; i++);
+
+	if (i >= length)
+	{
+		cout << "Pivot Encoder: no data received" << endl;
+		return false;
+	}
+
+	// get the first complete encoder value
+	pivot_buff_pt = 0;
+	for (i++; i < length; i++)
 	{
 		if (_buff[i] == '\n')
 		{
 			pivot_buff[pivot_buff_pt] = '\0';
-			lastDecoded = atoi(pivot_buff);
+			_data.encoderPivot = atoi(pivot_buff);
 			pivot_buff_pt = 0;
+			break;
 		}
-		else if(_buff[i] >= '0' && _buff[i] <= '9') {
+		else if ( (_buff[i] >= '0' && _buff[i] <= '9') || _buff[i] == '-' ) {
 			if (pivot_buff_pt >= 32)
 			{
 				// overflow
@@ -220,21 +231,20 @@ bool RobotConnector::RequestData()
 				}
 				cout << endl;
 				isErr = true;
-
-				pivot_buff_pt = 0;
+				break;
 			}
 			pivot_buff[pivot_buff_pt++] = _buff[i];
 		}
 		else {
-			cout << "Invalid Charactor Received from Pivot Encoder" << endl;
+			cout << "Invalid Charactor Received from Pivot Encoder (" << _buff[i] << ")" << endl;
 		}
 	}
 	if (isErr)
 	{
 		_buff[length] = '\0';
 		cout << "Get: \n" << _buff << "\nend" << endl;
+		return false;
 	}
-	_data.encoderPivot = lastDecoded;
 
 	return true;
 }
