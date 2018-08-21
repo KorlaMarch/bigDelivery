@@ -1,0 +1,51 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Visual Studio File
+.vs/*
+*.sln
+*.vcxproj
+*.vcxproj.*
+*.log
+*.dir
+*.pdb
+*.ilk
+/Win32
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+
+# Robot Logs
+*.reactivenavlog
+ReacNavGrid*

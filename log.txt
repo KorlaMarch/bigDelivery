@@ -1,0 +1,37 @@
+[Ganglia] ganglia_multi_driver : Class Initialized
+
+
+==== Launching RobotConnector Updater thread ==== 
+
+
+==== Launching Robot Control thread ==== 
+COM9
+[Ganglia] Completed set id 43 to motor 0
+[Ganglia] Completed set id 44 to motor 1
+[Ganglia] Byte Timeout: 0 500000
+[Ganglia] Response Timeout: 0 100000
+[Ganglia] ganglia_multi_driver : connect
+
+
+==== Launching LIDAR grabbing thread ==== 
+
+
+==== Launching Action/SF Generator thread ==== 
+[thread_LIDAR_SENSOR] Starting... at 90 Hz
+
+
+==== Launching PF Localizer thread ==== 
+The gridmap has 1564.0000m2 observed area, 977500 observed cells
+GangliaDriver::setMotorBLDC(43)
+PDF of 20000 particles initialized in 22.288ms
+GangliaDriver::setVelocityMode(43)
+GangliaDriver::setMotorBLDC(44)
+GangliaDriver::setVelocityMode(44)
+GangliaDriver::setMotorEnable(43) : 1
+GangliaDriver::setMotorStart(43) : 1
+GangliaDriver::setMotorEnable(44) : 1
+GangliaDriver::setMotorStart(44) : 1
+[CRoboPeakLidar] RPLidar health status : 0
+[ASFGenerator] Warning: *** Waiting for laser scans from the Device ***
+[PFLocalizer] Warning: *** Waiting for Action/SF from the generator ***
+PDF of 20000 particles initialized
