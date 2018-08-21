@@ -384,6 +384,7 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 		int sleeptime;
 		double WheelDistance;
 		utils::CTicTac timeout_read_scans;
+		const double meterPreTick = 1.0 / botData->robotData.encoderStepPerMeter;
 
 		// Read config
 		sleeptime = botData->cfgFile->read_int("GLOBAL", "sleeptime_ASF", 30, true);
@@ -443,7 +444,7 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 			
 			act->motionModelConfiguration = odom_params;
 
-			act->computeFromEncoders(0.001, 0.001, WheelDistance);
+			act->computeFromEncoders(meterPreTick, meterPreTick, WheelDistance);
 
 			// Compute action for upper base
 			CActionRobotMovement2DPtr actUp = act;

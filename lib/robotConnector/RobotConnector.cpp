@@ -173,8 +173,14 @@ bool RobotConnector::Update()
 
 		lastE = angular_error;
 		lastUpdate.Tic();
-
-		return ganglia.setAllVelocity({ vel_left , vel_right });
+		if (ganglia.setAllVelocity({ vel_left , vel_right }))
+		{
+			return true;
+		}
+		else {
+			cerr << "[RobotConnector] Set velocity failed" << endl;
+			return false;
+		}
 	}
 
 	return true;
@@ -245,6 +251,12 @@ bool RobotConnector::RequestData()
 		cout << "Get: \n" << _buff << "\nend" << endl;
 		return false;
 	}
+
+	// Get Encoder data from ganglia board
+	ganglia::GangliaStateArray gangliaSA;
+	ganglia.getAllGangliaState(gangliaSA);
+	_data.encoderLeft = gangliaSA.data[0].encoder;
+	_data.encoderRight = -gangliaSA.data[1].encoder;
 
 	return true;
 }
