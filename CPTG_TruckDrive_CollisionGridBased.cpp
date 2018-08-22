@@ -243,9 +243,9 @@ mrpt::kinematics::CVehicleVelCmdPtr CPTG_TruckDrive_CollisionGridBased::directio
 	float v,w;
 	ptgTruckDriveSteeringFunction( index2alpha(k),0, 0, 0, 0, v, w );
 
-	mrpt::kinematics::CVehicleVelCmd_TruckDrive * cmd = new mrpt::kinematics::CVehicleVelCmd_TruckDrive();
-	cmd->lin_vel = v;
-	cmd->ang_vel = w;
+	CVehicleVelCmd_TruckDrive * cmd = new CVehicleVelCmd_TruckDrive();
+	cmd->speed = v;
+	cmd->angle = w;
 	return mrpt::kinematics::CVehicleVelCmdPtr(cmd);
 }
 

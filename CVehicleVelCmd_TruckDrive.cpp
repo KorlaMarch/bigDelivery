@@ -60,6 +60,28 @@ void CVehicleVelCmd_TruckDrive::setToStop()
 	speed = .0;
 }
 
+void CVehicleVelCmd_TruckDrive::readFromStream(mrpt::utils::CStream &in, int version)
+{
+	switch (version)
+	{
+	case 0:
+		in >> speed >> angle;
+		break;
+	default:
+		MRPT_THROW_UNKNOWN_SERIALIZATION_VERSION(version)
+	};
+}
+
+void CVehicleVelCmd_TruckDrive::writeToStream(mrpt::utils::CStream &out, int *version) const
+{
+	if (version)
+	{
+		*version = 0;
+		return;
+	}
+	out << speed << angle;
+}
+
 void CVehicleVelCmd_TruckDrive::cmdVel_scale(double vel_scale)
 {
 	speed *= vel_scale;
