@@ -4,11 +4,9 @@
 using namespace mrpt::kinematics;
 using namespace mrpt::utils;
 
-IMPLEMENTS_SERIALIZABLE(CVehicleVelCmd_TruckDrive, CVehicleVelCmd, mrpt::kinematics)
-
 CVehicleVelCmd_TruckDrive::CVehicleVelCmd_TruckDrive() :
-	lin_vel(.0),
-	ang_vel(.0)
+	speed(.0),
+	angle(.0)
 {
 }
 CVehicleVelCmd_TruckDrive::~CVehicleVelCmd_TruckDrive()
@@ -23,8 +21,8 @@ std::string CVehicleVelCmd_TruckDrive::getVelCmdDescription(const int index) con
 {
 	switch (index)
 	{
-	case 0: return "lin_vel"; break;
-	case 1: return "ang_vel"; break;
+	case 0: return "speed"; break;
+	case 1: return "angle"; break;
 	default:
 		THROW_EXCEPTION_FMT("index out of bounds: %i", index);
 	};
@@ -34,8 +32,8 @@ double CVehicleVelCmd_TruckDrive::getVelCmdElement(const int index) const
 {
 	switch (index)
 	{
-	case 0: return lin_vel; break;
-	case 1: return ang_vel; break;
+	case 0: return speed; break;
+	case 1: return angle; break;
 	default:
 		THROW_EXCEPTION_FMT("index out of bounds: %i", index);
 	};
@@ -45,8 +43,8 @@ void CVehicleVelCmd_TruckDrive::setVelCmdElement(const int index, const double v
 {
 	switch (index)
 	{
-	case 0: lin_vel = val; break;
-	case 1: ang_vel = val; break;
+	case 0: speed = val; break;
+	case 1: angle = val; break;
 	default:
 		THROW_EXCEPTION_FMT("index out of bounds: %i", index);
 	};
@@ -54,88 +52,37 @@ void CVehicleVelCmd_TruckDrive::setVelCmdElement(const int index, const double v
 
 bool CVehicleVelCmd_TruckDrive::isStopCmd() const
 {
-	return lin_vel == .0 && ang_vel == .0;
+	return speed == .0;
 }
 
 void CVehicleVelCmd_TruckDrive::setToStop()
 {
-	lin_vel = ang_vel = .0;
-}
-
-void CVehicleVelCmd_TruckDrive::readFromStream(mrpt::utils::CStream &in, int version)
-{
-	switch (version)
-	{
-	case 0:
-		in >> lin_vel >> ang_vel;
-		break;
-	default:
-		MRPT_THROW_UNKNOWN_SERIALIZATION_VERSION(version)
-	};
-}
-
-void CVehicleVelCmd_TruckDrive::writeToStream(mrpt::utils::CStream &out, int *version) const
-{
-	if (version)
-	{
-		*version = 0;
-		return;
-	}
-	out << lin_vel << ang_vel;
+	speed = .0;
 }
 
 void CVehicleVelCmd_TruckDrive::cmdVel_scale(double vel_scale)
 {
-	lin_vel *= vel_scale;
-	ang_vel *= vel_scale;
+	speed *= vel_scale;
+	angle *= vel_scale;
 }
 
 double CVehicleVelCmd_TruckDrive::cmdVel_limits(const mrpt::kinematics::CVehicleVelCmd &prev_vel_cmd, const double beta, const TVelCmdParams &params)
 {
 	ASSERT_(params.robotMax_V_mps>0);
-	ASSERT_(params.robotMax_W_radps>0);
-	const mrpt::kinematics::CVehicleVelCmd_TruckDrive *prevcmd = dynamic_cast<const mrpt::kinematics::CVehicleVelCmd_TruckDrive*>(&prev_vel_cmd);
+	const CVehicleVelCmd_TruckDrive *prevcmd = dynamic_cast<const CVehicleVelCmd_TruckDrive*>(&prev_vel_cmd);
 	ASSERTMSG_(prevcmd, "Expected prevcmd of type `CVehicleVelCmd_TruckDrive`");
 
-	double speed_scale = filter_max_vw(lin_vel, ang_vel, params);
-
-	if (std::abs(lin_vel) < 0.01) // i.e. new behavior is nearly a pure rotation
-	{ // thus, it's OK to blend the rotational component
-		ang_vel = beta*ang_vel + (1 - beta)*prevcmd->ang_vel;
-	}
-	else // there is a non-zero translational component
-	{
-		// must maintain the ratio of w to v (while filtering v)
-		float ratio = ang_vel / lin_vel;
-		lin_vel = beta*lin_vel + (1 - beta)*prevcmd->lin_vel;   // blend new v value
-		ang_vel = ratio * lin_vel;  // ensure new w implements expected path curvature
-
-		speed_scale*= filter_max_vw(lin_vel, ang_vel, params);
-	}
-
-	return speed_scale;
-}
-
-double CVehicleVelCmd_TruckDrive::filter_max_vw(double &v, double &w, const TVelCmdParams &p)
-{
 	double speed_scale = 1.0;
-	// Ensure maximum speeds:
-	if (std::abs(v) > p.robotMax_V_mps) {
+
+	speed = beta*speed + (1 - beta)*prevcmd->speed;   // blend new v value
+
+	// Speed limit
+	if (std::abs(speed) > params.robotMax_V_mps) {
 		// Scale:
-		const double F = std::abs(p.robotMax_V_mps / v);
-		v *= F;
-		w *= F;
+		const double F = std::abs(params.robotMax_V_mps / speed);
+		speed *= F;
 		speed_scale *= F;
 	}
 
-	if (std::abs(w) > p.robotMax_W_radps) {
-		// Scale:
-		const double F = std::abs(p.robotMax_W_radps / w);
-		v *= F;
-		w *= F;
-		speed_scale *= F;
-	}
 	return speed_scale;
-
 }
-
