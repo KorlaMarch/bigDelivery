@@ -40,6 +40,7 @@
 *.dir
 *.pdb
 *.ilk
+*.exp
 /Win32
 
 # CMake

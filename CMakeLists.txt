@@ -48,6 +48,8 @@ bigDeliveryMain.cpp bigDeliveryMain.h
 MyGLCanvas.cpp MyGLCanvas.h
 RobotNavInterface.cpp RobotNavInterface.h
 BotModel.cpp BotModel.h
+CPTG_TruckDrive_CollisionGridBased.cpp CPTG_TruckDrive_CollisionGridBased.h
+CVehicleVelCmd_TruckDrive.cpp CVehicleVelCmd_TruckDrive.h
 )
 
 IF(WIN32)
