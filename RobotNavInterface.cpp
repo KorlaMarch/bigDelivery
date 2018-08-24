@@ -61,17 +61,28 @@ bool RobotNavInterface::senseObstacles(maps::CSimplePointsMap &obstacles, TTimeS
 
 bool RobotNavInterface::updateMovement(double lin_vel, double ang_vel)
 {
-	double left_vel  = lin_vel - ang_vel * wheel_radius;
-	double right_vel = lin_vel + ang_vel * wheel_radius;
+	double speed = lin_vel;
+	double angle;
+	
 
-	// if the velocity exceed the maximum, turn it down
-	const double maxVal = max(fabs(left_vel), fabs(right_vel));
-	if (maxVal > 0.6/1000.0) {
-		left_vel  /= maxVal;
-		right_vel /= maxVal;
+	if (lin_vel == 0.0)
+	{
+		angle = 0;
 	}
-
-	if ( !botData->robot.DriveDirect((int)(left_vel*1000), (int)(right_vel*1000)) )
+	else {
+		double sin_angle = ang_vel * botData->robotData.frontBackWheelsDistance / lin_vel;
+		if (sin_angle > 1.0 || sin_angle < -1.0)
+		{
+			cout << "Warning: Impossible movement" << endl;
+			angle = 0;
+			speed = 0;
+		}
+		else {
+			angle = asin(sin_angle);
+		}
+	}
+	
+	if ( !botData->robot.DrivePID(speed, angle) )
 	{
 		cerr << "SetControl Fail" << endl;
 		return false;

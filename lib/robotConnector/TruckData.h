@@ -35,6 +35,7 @@ public :
 	double encoderStepPerMeter = 151440.4;
 	double encoderStepPreRad = 320.22;
 	double wheelDistance = 0.4235;
+	double frontBackWheelsDistance = 0.54;
 	double speed_coeff = 1666; // the speed sent to the board will be calculated by [ = speed_coeff * speed (in m/s) ]
 	int speed_limit = 1000; // limitation of a speed that will be send to the wheels
 
