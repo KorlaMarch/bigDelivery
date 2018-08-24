@@ -65,7 +65,7 @@ bool RobotNavInterface::updateMovement(double lin_vel, double ang_vel)
 	double angle;
 	
 
-	if (lin_vel == 0.0)
+	if ( fabs(lin_vel) < 0.001 )
 	{
 		angle = 0;
 	}
@@ -73,9 +73,16 @@ bool RobotNavInterface::updateMovement(double lin_vel, double ang_vel)
 		double sin_angle = ang_vel * botData->robotData.frontBackWheelsDistance / lin_vel;
 		if (sin_angle > 1.0 || sin_angle < -1.0)
 		{
-			cout << "Warning: Impossible movement" << endl;
-			angle = 0;
-			speed = 0;
+			cout << "Warning: Impossible movement (" << lin_vel << "," << ang_vel << ")" << endl;
+			if (sin_angle > 1.0)
+			{
+				angle = M_PI/2;
+				speed = 0.6;
+			}
+			else {
+				angle = - M_PI / 2;
+				speed = 0.6;
+			}
 		}
 		else {
 			angle = asin(sin_angle);

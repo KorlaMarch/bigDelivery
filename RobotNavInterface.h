@@ -19,10 +19,8 @@ class RobotNavInterface : public CRobot2NavInterface
 {
 private:
 	BotModel* botData;
-	double wheel_radius; // radius of the robot (from center to each wheel)
 public:
 	RobotNavInterface(BotModel* _botData) : botData(_botData) {
-		wheel_radius = botData->cfgFile->read_double("ICREATE", "wheelDistance", 1.0, true);
 	}
 
 	bool getCurrentPoseAndSpeeds(TPose2D &curPose, TTwist2D &curVel, TTimeStamp &timestamp, TPose2D &curOdometry, string &frame_id) override;

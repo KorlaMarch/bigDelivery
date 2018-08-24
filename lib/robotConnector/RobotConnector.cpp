@@ -122,6 +122,7 @@ bool RobotConnector::Update()
 {
 	if (!RequestData())
 	{
+		cerr << "Request Data failed" << endl;
 		// Stop all motor, just to be safe
 		ganglia.setAllVelocity({ 0, 0 });
 		return false;
@@ -198,6 +199,16 @@ bool RobotConnector::RequestData()
 	if (length == -1)
 	{
 		cout << "Pivot Encoder Error : Serial Read " << endl;
+		// try to reconnect 
+		pivotSerial.Close();
+		if (!pivotSerial.Open("\\\\.\\COM11", 1200))
+		{
+			std::cerr << "[RobotConnector] Connecting to Pivot Encoder Error" << std::endl;
+			return false;
+		}
+
+		pivotSerial.Set_DTR_State(false);
+
 		return false;
 	}
 	//cout << "buffer size " << length << endl;

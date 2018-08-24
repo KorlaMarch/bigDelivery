@@ -97,11 +97,11 @@ bool bigDeliveryApp::OnInit()
 			hPFLocalizerThread = mrpt::system::createThread(bigDeliveryApp::PFLocalizerThread, commonModel);
 		}
 		// Reactive Navigation
-		/* mrpt::system::TThreadHandle hReactiveNavThread;
+		mrpt::system::TThreadHandle hReactiveNavThread;
 		{
 			std::cout << "\n\n==== Launching Reactive Navigation thread ==== \n";
 			hReactiveNavThread = mrpt::system::createThread(bigDeliveryApp::ReactiveNavThread, commonModel);
-		}*/
+		}
 
 		// -------------------------------
 
@@ -465,7 +465,7 @@ void bigDeliveryApp::ASFGeneratorThread(BotModel* botData)
 			poses::CPose2D actpos = actUp->poseChange->getMeanVal();
 			TTwist2D newVelocity(actpos.m_coords[0]/dt, actpos.m_coords[1]/dt, actpos.phi()/dt);
 			newVelocity.rotate(botData->odometry.phi());
-
+			
 			{
 				synch::CCriticalSectionLocker	lock(&botData->cs_ASF);
 
